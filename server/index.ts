@@ -81,6 +81,10 @@ app.post('/api/parse-receipt', async (req, res) => {
       res.status(401).json({ error: 'invalid_api_key' })
       return
     }
+    if (err instanceof Anthropic.BadRequestError && /credit balance/i.test(err.message)) {
+      res.status(402).json({ error: 'insufficient_credits' })
+      return
+    }
     console.error('parse-receipt failed:', err)
     res.status(502).json({ error: 'upstream_error' })
   }

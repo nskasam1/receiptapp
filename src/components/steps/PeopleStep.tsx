@@ -1,42 +1,51 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
-import { deleteFrequentGroup, loadFrequentGroups, saveFrequentGroup, type FrequentGroup } from '../../lib/storage'
+import { isSupabaseConfigured } from '../../lib/supabase/client'
+import { useAuth } from '../../lib/supabase/useAuth'
+import { fetchKnownPeople, forgetPerson, rememberPerson, type KnownPerson } from '../../lib/supabase/knownPeople'
 import { StepShell } from '../StepShell'
 import { BottomBar } from '../BottomBar'
 import { PersonAvatar } from '../ui/PersonAvatar'
+import { AuthForm } from '../ui/AuthForm'
 import { Icon } from '../ui/Icon'
 
 export function PeopleStep() {
   const people = useReceiptStore((s) => s.people)
   const addPerson = useReceiptStore((s) => s.addPerson)
-  const addPeople = useReceiptStore((s) => s.addPeople)
   const removePerson = useReceiptStore((s) => s.removePerson)
   const nextStep = useReceiptStore((s) => s.nextStep)
   const prevStep = useReceiptStore((s) => s.prevStep)
 
   const [name, setName] = useState('')
-  const [groups, setGroups] = useState<FrequentGroup[]>(() => loadFrequentGroups())
-  const [savingName, setSavingName] = useState(false)
-  const [groupName, setGroupName] = useState('')
+  const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
+  const [knownPeople, setKnownPeople] = useState<KnownPerson[]>([])
 
-  function submitName() {
+  useEffect(() => {
+    if (!user) {
+      setKnownPeople([])
+      return
+    }
+    fetchKnownPeople(user.id).then(setKnownPeople)
+  }, [user])
+
+  async function submitName() {
     const trimmed = name.trim()
     if (!trimmed) return
     addPerson(trimmed)
     setName('')
+    if (user) {
+      await rememberPerson(user.id, trimmed, knownPeople)
+      fetchKnownPeople(user.id).then(setKnownPeople)
+    }
   }
 
-  function commitSaveGroup() {
-    const trimmed = groupName.trim()
-    if (!trimmed || people.length === 0) {
-      setSavingName(false)
-      return
-    }
-    const next = saveFrequentGroup({ id: trimmed.toLowerCase(), name: trimmed, people })
-    setGroups(next)
-    setSavingName(false)
-    setGroupName('')
+  async function handleForget(id: string) {
+    setKnownPeople((prev) => prev.filter((p) => p.id !== id))
+    await forgetPerson(id)
   }
+
+  const addedNames = new Set(people.map((p) => p.name.toLowerCase()))
+  const quickAddPeople = knownPeople.filter((p) => !addedNames.has(p.name.toLowerCase()))
 
   return (
     <StepShell
@@ -73,7 +82,7 @@ export function PeopleStep() {
           onChange={(e) => setName(e.target.value)}
           placeholder="Add a name"
           autoFocus
-          className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-[15px] text-ink placeholder:text-faint focus:border-primary focus:outline-none"
+          className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-[15px] text-ink placeholder:text-muted focus:border-primary focus:outline-none"
         />
         <button
           type="submit"
@@ -88,7 +97,7 @@ export function PeopleStep() {
       <div className="mt-5">
         {people.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center">
-            <Icon name="users" size={22} className="mx-auto mb-2 text-faint" />
+            <Icon name="users" size={22} className="mx-auto mb-2 text-muted" />
             <p className="text-[14px] text-muted">
               Add who's splitting this bill — you first, then everyone else at the table.
             </p>
@@ -106,7 +115,7 @@ export function PeopleStep() {
                   type="button"
                   onClick={() => removePerson(p.id)}
                   aria-label={`Remove ${p.name}`}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-faint hover:bg-surface-2 hover:text-danger"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-danger"
                 >
                   <Icon name="x" size={16} />
                 </button>
@@ -116,69 +125,46 @@ export function PeopleStep() {
         )}
       </div>
 
-      {people.length > 0 && (
-        <div className="mt-4">
-          {savingName ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                commitSaveGroup()
-              }}
-              className="flex gap-2"
-            >
-              <input
-                autoFocus
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-                placeholder="Name this group (e.g. Roommates)"
-                className="min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-[14px] focus:border-primary focus:outline-none"
-              />
-              <button type="submit" className="rounded-lg bg-surface-2 px-3 py-2 text-[14px] font-medium text-ink">
-                Save
-              </button>
-            </form>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setSavingName(true)}
-              className="text-[13px] font-medium text-primary"
-            >
-              Save this group for next time
-            </button>
-          )}
-        </div>
-      )}
-
-      {groups.length > 0 && (
+      {quickAddPeople.length > 0 && (
         <div className="mt-6">
-          <div className="mb-2 text-[13px] font-medium text-muted">Frequent groups</div>
+          <div className="mb-2 text-[13px] font-medium text-muted">People you know</div>
           <div className="flex flex-col gap-2">
-            {groups.map((g) => (
-              <div
-                key={g.id}
-                className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5"
-              >
+            {quickAddPeople.map((p) => (
+              <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5">
                 <button
                   type="button"
-                  onClick={() => addPeople(g.people)}
+                  onClick={() => addPerson(p.name)}
                   className="flex min-w-0 flex-1 items-center gap-2 text-left"
                 >
-                  <span className="truncate text-[14px] font-medium text-ink">{g.name}</span>
-                  <span className="shrink-0 text-[12px] text-faint">
-                    {g.people.length} {g.people.length === 1 ? 'person' : 'people'}
-                  </span>
+                  <Icon name="plus" size={14} className="shrink-0 text-primary" />
+                  <span className="truncate text-[14px] font-medium text-ink">{p.name}</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setGroups(deleteFrequentGroup(g.id))}
-                  aria-label={`Delete ${g.name} group`}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-faint hover:bg-surface-2 hover:text-danger"
+                  onClick={() => handleForget(p.id)}
+                  aria-label={`Forget ${p.name}`}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-danger"
                 >
                   <Icon name="trash" size={14} />
                 </button>
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {isSupabaseConfigured && !authLoading && (
+        <div className="mt-6">
+          {user ? (
+            <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
+              <span className="truncate text-[13px] text-muted">Synced as {user.email}</span>
+              <button type="button" onClick={signOut} className="shrink-0 text-[13px] font-medium text-primary">
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <AuthForm onSignIn={signIn} onSignUp={signUp} />
+          )}
         </div>
       )}
     </StepShell>

@@ -21,6 +21,12 @@ export async function parseReceiptImage(file: File): Promise<ParseReceiptOutcome
   }
 
   if (response.status === 501) return { status: 'not_configured' }
+  if (response.status === 402) {
+    return {
+      status: 'error',
+      message: 'The Anthropic account needs credits added before scanning will work — check Plans & Billing',
+    }
+  }
   if (response.status === 429) return { status: 'error', message: 'Too many scans right now — try again in a moment' }
   if (response.status === 422) {
     const body = await response.json().catch(() => null)
