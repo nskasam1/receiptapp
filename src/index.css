@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+
+  --color-bg: oklch(0.09 0 0);
+  --color-surface: oklch(0.16 0.006 200);
+  --color-surface-2: oklch(0.205 0.007 200);
+  --color-border: oklch(0.28 0.009 200);
+  --color-ink: oklch(0.95 0.004 200);
+  --color-muted: oklch(0.6 0.006 200);
+  --color-faint: oklch(0.42 0.006 200);
+
+  --color-primary: oklch(0.62 0.11 200);
+  --color-primary-hover: oklch(0.67 0.11 200);
+  --color-primary-ink: oklch(0.99 0 0);
+
+  --color-accent: oklch(0.74 0.14 75);
+  --color-accent-ink: oklch(0.99 0 0);
+
+  --color-danger: oklch(0.62 0.19 25);
+  --color-danger-ink: oklch(0.99 0 0);
+  --color-success: oklch(0.68 0.15 145);
+  --color-success-ink: oklch(0.99 0 0);
+
+  --color-person-1: oklch(0.7 0.13 25);
+  --color-person-2: oklch(0.7 0.13 90);
+  --color-person-3: oklch(0.7 0.13 150);
+  --color-person-4: oklch(0.7 0.13 230);
+  --color-person-5: oklch(0.7 0.13 290);
+  --color-person-6: oklch(0.7 0.13 345);
+
+  --z-sticky: 20;
+  --z-toast: 50;
+
+  --animate-rise: rise 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-toast-in: toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
+input,
+button,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* larger tap targets, no accidental text selection on repeated taps */
+button {
+  touch-action: manipulation;
+}
