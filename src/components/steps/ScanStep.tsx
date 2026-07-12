@@ -57,9 +57,13 @@ export function ScanStep() {
       }
     >
       <div className="flex flex-col items-center py-6 text-center">
-        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface">
-          <Icon name="receipt" size={30} className="text-primary" />
-        </div>
+        <img
+          src="/icons/icon-192.png"
+          alt=""
+          width={72}
+          height={72}
+          className="mb-5 rounded-2xl shadow-lg shadow-black/40"
+        />
         <h2 className="mb-1.5 text-[20px] font-semibold">Scan the receipt</h2>
         <p className="mb-6 max-w-[30ch] text-[14px] text-muted">
           Snap a photo and we'll read every item off it — no typing required.
