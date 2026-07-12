@@ -38,7 +38,7 @@ export function AuthForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-primary focus:outline-none"
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-primary"
         />
         <input
           type="password"
@@ -48,7 +48,7 @@ export function AuthForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-primary focus:outline-none"
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-primary"
         />
         <button
           type="submit"
@@ -60,7 +60,7 @@ export function AuthForm({
       </form>
 
       {message && (
-        <p className={`mt-2 text-[13px] ${message.isError ? 'text-danger' : 'text-success'}`}>{message.text}</p>
+        <p className={`mt-2 text-[13px] ${message.isError ? 'text-accent-text' : 'text-primary'}`}>{message.text}</p>
       )}
 
       <button

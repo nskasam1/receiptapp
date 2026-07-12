@@ -110,7 +110,11 @@ export const useReceiptStore = create<ReceiptState>()(
         })
       },
       updateItem: (id, patch) => {
-        set({ items: get().items.map((item) => (item.id === id ? { ...item, ...patch } : item)) })
+        set({
+          items: get().items.map((item) =>
+            item.id === id ? { ...item, ...patch, lowConfidence: false } : item,
+          ),
+        })
       },
       removeItem: (id) => {
         set({ items: get().items.filter((item) => item.id !== id) })
@@ -149,6 +153,7 @@ export const useReceiptStore = create<ReceiptState>()(
             quantity: line.quantity && line.quantity > 0 ? Math.round(line.quantity) : 1,
             totalPriceCents: Math.round(line.totalPrice * 100),
             assignments: {},
+            lowConfidence: line.lowConfidence,
           }))
         set({
           items,
@@ -198,8 +203,3 @@ export const useReceiptStore = create<ReceiptState>()(
     },
   ),
 )
-
-export function personColorVar(index: number): string {
-  const n = ((index % 6) + 6) % 6
-  return `var(--color-person-${n + 1})`
-}

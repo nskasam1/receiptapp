@@ -6,12 +6,14 @@ export function BottomBar({
   onPrimary,
   primaryDisabled,
   secondary,
+  variant = 'primary',
 }: {
   info?: ReactNode
   primaryLabel: string
   onPrimary: () => void
   primaryDisabled?: boolean
   secondary?: ReactNode
+  variant?: 'primary' | 'accent'
 }) {
   return (
     <div
@@ -26,7 +28,11 @@ export function BottomBar({
             type="button"
             onClick={onPrimary}
             disabled={primaryDisabled}
-            className="rounded-xl bg-primary px-5 py-3 text-[15px] font-semibold text-primary-ink transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-35"
+            className={`rounded-xl px-5 py-3 text-[15px] font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-35 ${
+              variant === 'accent'
+                ? 'bg-accent text-accent-ink hover:bg-accent/90'
+                : 'bg-primary text-primary-ink hover:bg-primary-hover'
+            }`}
           >
             {primaryLabel}
           </button>

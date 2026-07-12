@@ -22,8 +22,8 @@ export default defineConfig({
         name: 'SplitScan',
         short_name: 'SplitScan',
         description: 'Scan a receipt, split it, text everyone what they owe.',
-        theme_color: '#0f1216',
-        background_color: '#0f1216',
+        theme_color: '#fafaf9',
+        background_color: '#fafaf9',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -35,6 +35,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // Fontsource ships every unicode subset (cyrillic, vietnamese, greek, ...);
+        // only precache the ones this app's copy actually uses.
+        globIgnores: ['**/*-{cyrillic,cyrillic-ext,vietnamese,greek,greek-ext}-*.woff2'],
       },
     }),
   ],

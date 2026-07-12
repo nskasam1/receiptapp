@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
 import { parseReceiptImage } from '../../lib/ocr/parseReceipt'
 import type { ParseReceiptOutcome } from '../../lib/ocr/types'
@@ -18,11 +18,19 @@ export function ScanStep() {
   const nextStep = useReceiptStore((s) => s.nextStep)
 
   const [state, setState] = useState<ScanState>({ phase: 'idle' })
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const libraryInputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
+
   async function handleFile(file: File | undefined) {
     if (!file) return
+    setPreviewUrl(URL.createObjectURL(file))
     setState({ phase: 'parsing' })
     const outcome: ParseReceiptOutcome = await parseReceiptImage(file)
 
@@ -49,31 +57,27 @@ export function ScanStep() {
       title="SplitScan"
       stepIndex={0}
       stepCount={7}
-      bottomBar={
-        <BottomBar
-          primaryLabel="Enter items manually"
-          onPrimary={nextStep}
-        />
-      }
+      bottomBar={<BottomBar primaryLabel="Enter items manually" onPrimary={nextStep} />}
     >
-      <div className="flex flex-col items-center py-6 text-center">
-        <img
-          src="/icons/icon-192.png"
-          alt=""
-          width={72}
-          height={72}
-          className="mb-5 rounded-2xl shadow-lg shadow-black/40"
-        />
-        <h2 className="mb-1.5 text-[20px] font-semibold">Scan the receipt</h2>
+      <div className="flex flex-col items-center py-2 text-center">
+        <div className="relative mb-5 flex aspect-[4/3] w-full max-w-xs items-center justify-center overflow-hidden rounded-2xl bg-primary-hover">
+          {previewUrl ? (
+            <img src={previewUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <Icon name="receipt" size={40} className="text-primary-ink/70" />
+          )}
+          {state.phase === 'parsing' && (
+            <div className="animate-scan-sweep absolute inset-x-0 top-0 h-1 bg-accent shadow-[0_0_16px_2px_var(--color-accent)]" />
+          )}
+        </div>
+
+        <h2 className="mb-1.5 text-[21px] font-semibold">Scan the receipt</h2>
         <p className="mb-6 max-w-[30ch] text-[14px] text-muted">
           Snap a photo and we'll read every item off it — no typing required.
         </p>
 
         {state.phase === 'parsing' && (
-          <div className="animate-rise flex flex-col items-center gap-3 py-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-surface-2 border-t-primary" />
-            <p className="text-[14px] text-muted">Reading your receipt…</p>
-          </div>
+          <p className="animate-rise mb-2 text-[14px] text-muted">Reading your receipt…</p>
         )}
 
         {state.phase === 'idle' && (
@@ -81,7 +85,7 @@ export function ScanStep() {
             <button
               type="button"
               onClick={() => cameraInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-[15px] font-semibold text-primary-ink hover:bg-primary-hover"
+              className="flex items-center justify-center gap-2 rounded-xl bg-accent py-3.5 text-[15px] font-semibold text-accent-ink hover:bg-accent/90"
             >
               <Icon name="receipt" size={18} />
               Take a photo
@@ -89,7 +93,7 @@ export function ScanStep() {
             <button
               type="button"
               onClick={() => libraryInputRef.current?.click()}
-              className="rounded-xl border border-border py-3.5 text-[15px] font-medium text-ink hover:bg-surface"
+              className="rounded-xl border border-primary/30 py-3.5 text-[15px] font-medium text-primary hover:bg-surface"
             >
               Choose from library
             </button>
@@ -97,8 +101,8 @@ export function ScanStep() {
         )}
 
         {state.phase === 'not_configured' && (
-          <div className="animate-rise flex w-full max-w-xs flex-col items-center gap-3 rounded-xl bg-surface p-4">
-            <Icon name="alert" size={18} className="text-accent" />
+          <div className="animate-rise flex w-full max-w-xs flex-col items-center gap-3 rounded-xl border border-border bg-surface p-4">
+            <Icon name="alert" size={18} className="text-accent-text" />
             <p className="text-[13px] text-muted">
               Scanning isn't set up on this device yet — add an Anthropic API key to enable it. You can still
               enter items yourself below.
@@ -107,8 +111,8 @@ export function ScanStep() {
         )}
 
         {state.phase === 'low_confidence' && (
-          <div className="animate-rise flex w-full max-w-xs flex-col items-center gap-3 rounded-xl bg-surface p-4">
-            <Icon name="alert" size={18} className="text-accent" />
+          <div className="animate-rise flex w-full max-w-xs flex-col items-center gap-3 rounded-xl border border-border bg-surface p-4">
+            <Icon name="alert" size={18} className="text-accent-text" />
             <p className="text-[13px] text-muted">
               That photo was hard to read — I filled in what I could, but double-check the items on the next
               screen.
@@ -131,8 +135,8 @@ export function ScanStep() {
         )}
 
         {state.phase === 'error' && (
-          <div className="animate-rise flex w-full max-w-xs flex-col items-center gap-3 rounded-xl bg-surface p-4">
-            <Icon name="alert" size={18} className="text-danger" />
+          <div className="animate-rise flex w-full max-w-xs flex-col items-center gap-3 rounded-xl border border-border bg-surface p-4">
+            <Icon name="alert" size={18} className="text-accent-text" />
             <p className="text-[13px] text-muted">{state.message}</p>
             <button
               type="button"

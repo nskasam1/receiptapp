@@ -43,8 +43,8 @@ export function StepShell({
           ) : (
             <div className="w-9 shrink-0" />
           )}
-          <h1 className="flex-1 truncate text-center text-[17px] font-semibold">{title}</h1>
-          <span className="w-9 shrink-0 text-right text-[12px] tabular-nums text-faint">
+          <h1 className="flex-1 truncate text-center text-[19px] font-semibold">{title}</h1>
+          <span className="font-mono-tabular w-9 shrink-0 text-right text-[12px] text-muted">
             {stepIndex + 1}/{stepCount}
           </span>
         </div>

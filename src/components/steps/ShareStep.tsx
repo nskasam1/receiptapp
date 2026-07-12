@@ -44,8 +44,14 @@ export function ShareStep() {
       onBack={prevStep}
       bottomBar={
         <BottomBar
-          primaryLabel="Start a new split"
-          onPrimary={reset}
+          primaryLabel="Share the breakdown"
+          onPrimary={() => handleShare(buildGroupSummaryText(result.people, format === 'itemized'))}
+          variant="accent"
+          secondary={
+            <button type="button" onClick={reset} className="px-2 text-[13px] font-medium text-primary">
+              Start over
+            </button>
+          }
         />
       }
     >
@@ -62,38 +68,27 @@ export function ShareStep() {
       </div>
 
       <ul className="flex flex-col gap-2.5">
-        {result.people.map((split, index) => {
+        {result.people.map((split) => {
           const text = format === 'itemized' ? buildItemizedText(split) : buildShortText(split)
           return (
-            <li key={split.personId} className="rounded-xl bg-surface p-3.5">
-              <div className="flex items-center gap-3">
-                <PersonAvatar name={split.name} index={index} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[15px] font-medium">{split.name}</div>
-                  <div className="truncate text-[13px] text-muted">{text}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleShare(text)}
-                  aria-label={`Share amount owed to ${split.name}`}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-ink"
-                >
-                  <Icon name="share" size={17} />
-                </button>
+            <li key={split.personId} className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3.5">
+              <PersonAvatar name={split.name} size={32} />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[15px] font-medium">{split.name}</div>
+                <div className="truncate text-[13px] text-muted">{text}</div>
               </div>
+              <button
+                type="button"
+                onClick={() => handleShare(text)}
+                aria-label={`Share amount owed to ${split.name}`}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary text-primary hover:bg-primary hover:text-primary-ink"
+              >
+                <Icon name="share" size={17} />
+              </button>
             </li>
           )
         })}
       </ul>
-
-      <button
-        type="button"
-        onClick={() => handleShare(buildGroupSummaryText(result.people, format === 'itemized'))}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 text-[14px] font-medium text-ink hover:bg-surface"
-      >
-        <Icon name="message" size={16} />
-        Share the whole breakdown at once
-      </button>
 
       {toast && <Toast message={toast} onDone={() => setToast(null)} />}
     </StepShell>

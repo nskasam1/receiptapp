@@ -2,6 +2,7 @@ export interface ParsedReceiptItem {
   name: string
   quantity: number | null
   totalPrice: number
+  lowConfidence: boolean
 }
 
 export interface ParsedReceipt {

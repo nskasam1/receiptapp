@@ -82,42 +82,42 @@ export function PeopleStep() {
           onChange={(e) => setName(e.target.value)}
           placeholder="Add a name"
           autoFocus
-          className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-[15px] text-ink placeholder:text-muted focus:border-primary focus:outline-none"
+          className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-4 py-3.5 text-[16px] text-ink placeholder:text-muted focus:border-primary"
         />
         <button
           type="submit"
           disabled={!name.trim()}
           aria-label="Add person"
-          className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-xl bg-primary text-primary-ink disabled:opacity-35"
+          className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-xl bg-primary text-primary-ink disabled:opacity-35"
         >
-          <Icon name="plus" />
+          <Icon name="plus" size={22} />
         </button>
       </form>
 
       <div className="mt-5">
         {people.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center">
-            <Icon name="users" size={22} className="mx-auto mb-2 text-muted" />
+            <Icon name="users" size={24} className="mx-auto mb-2 text-muted" />
             <p className="text-[14px] text-muted">
               Add who's splitting this bill — you first, then everyone else at the table.
             </p>
           </div>
         ) : (
           <ul className="flex flex-col gap-2">
-            {people.map((p, i) => (
+            {people.map((p) => (
               <li
                 key={p.id}
-                className="animate-rise flex items-center gap-3 rounded-xl bg-surface px-3 py-2.5"
+                className="animate-rise flex items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3"
               >
-                <PersonAvatar name={p.name} index={i} />
-                <span className="flex-1 truncate text-[15px]">{p.name}</span>
+                <PersonAvatar name={p.name} size={36} />
+                <span className="flex-1 truncate text-[16px]">{p.name}</span>
                 <button
                   type="button"
                   onClick={() => removePerson(p.id)}
                   aria-label={`Remove ${p.name}`}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-danger"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-accent-text"
                 >
-                  <Icon name="x" size={16} />
+                  <Icon name="x" size={17} />
                 </button>
               </li>
             ))}
@@ -130,20 +130,20 @@ export function PeopleStep() {
           <div className="mb-2 text-[13px] font-medium text-muted">People you know</div>
           <div className="flex flex-col gap-2">
             {quickAddPeople.map((p) => (
-              <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5">
+              <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border px-3.5 py-3">
                 <button
                   type="button"
                   onClick={() => addPerson(p.name)}
                   className="flex min-w-0 flex-1 items-center gap-2 text-left"
                 >
                   <Icon name="plus" size={14} className="shrink-0 text-primary" />
-                  <span className="truncate text-[14px] font-medium text-ink">{p.name}</span>
+                  <span className="truncate text-[15px] font-medium text-ink">{p.name}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleForget(p.id)}
                   aria-label={`Forget ${p.name}`}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-danger"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-accent-text"
                 >
                   <Icon name="trash" size={14} />
                 </button>

@@ -29,12 +29,12 @@ export function AssignStep() {
           onPrimary={nextStep}
           info={
             unassignedCount > 0 ? (
-              <span className="flex items-center gap-1.5 text-[13px] text-accent">
+              <span className="flex items-center gap-1.5 text-[13px] text-accent-text">
                 <Icon name="alert" size={14} />
                 {unassignedCount} unassigned
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-[13px] text-success">
+              <span className="flex items-center gap-1.5 text-[13px] text-primary">
                 <Icon name="check" size={14} />
                 Everything's assigned
               </span>
@@ -49,30 +49,31 @@ export function AssignStep() {
       <ul className="flex flex-col gap-3">
         {items.map((item) => {
           const assignedIds = Object.keys(item.assignments)
+          const isSplit = assignedIds.length > 1
           return (
-            <li key={item.id} className="rounded-xl bg-surface p-3">
-              <div className="mb-2.5 flex items-baseline justify-between gap-2">
+            <li key={item.id} className="rounded-xl border border-border bg-surface p-3.5">
+              <div className="mb-2.5 flex items-baseline">
                 <span className="truncate text-[15px] font-medium">{item.name || 'Unnamed item'}</span>
-                <span className="shrink-0 text-[14px] tabular-nums text-muted">
+                <span className="leader" />
+                <span className="font-mono-tabular shrink-0 text-[15px] font-semibold">
                   {formatCents(item.totalPriceCents)}
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {people.map((person, index) => (
+                {people.map((person) => (
                   <PersonChip
                     key={person.id}
                     name={person.name}
-                    index={index}
                     selected={person.id in item.assignments}
                     units={item.assignments[person.id]}
                     onToggle={() => toggleAssignment(item.id, person.id)}
                     onIncrement={
-                      assignedIds.length > 1
+                      isSplit
                         ? () => setAssignmentUnits(item.id, person.id, (item.assignments[person.id] ?? 1) + 1)
                         : undefined
                     }
                     onDecrement={
-                      assignedIds.length > 1
+                      isSplit
                         ? () =>
                             setAssignmentUnits(
                               item.id,
@@ -84,6 +85,11 @@ export function AssignStep() {
                   />
                 ))}
               </div>
+              {isSplit && (
+                <div className="mt-3 border-t border-dashed border-accent-text pt-2 text-[12px] text-muted">
+                  Split {assignedIds.length} ways
+                </div>
+              )}
             </li>
           )
         })}

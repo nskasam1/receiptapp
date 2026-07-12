@@ -16,8 +16,9 @@ export const RECEIPT_JSON_SCHEMA = {
           name: { type: 'string' },
           quantity: { type: ['number', 'null'] },
           totalPrice: { type: 'number' },
+          lowConfidence: { type: 'boolean' },
         },
-        required: ['name', 'quantity', 'totalPrice'],
+        required: ['name', 'quantity', 'totalPrice', 'lowConfidence'],
         additionalProperties: false,
       },
     },
@@ -33,6 +34,7 @@ Rules:
 - "quantity" is the count printed on that line if shown (e.g. "2x Burger" -> 2). Use null if not shown or unclear.
 - Do not include tax, tip, subtotal, or grand total as line items — report those separately in their own fields.
 - "subtotal", "tax", "tip", and "grandTotal" are null if not printed on the receipt or not clearly legible.
-- Set "confidence" to "low" if the image is blurry, cropped, at an angle, faded (thermal paper), or you are guessing at any amount. Set it to "medium" if mostly readable with a couple of uncertain items. Set it to "high" only if every amount is clearly legible.
+- Set "lowConfidence" to true on a per-item basis for any line where you had to guess at the name, price, or quantity (smudged print, ambiguous character, partially cropped) — false for lines you read with certainty.
+- Set the overall "confidence" to "low" if the image is blurry, cropped, at an angle, faded (thermal paper), or you are guessing at most amounts. Set it to "medium" if mostly readable with a couple of uncertain items. Set it to "high" only if every amount is clearly legible.
 - Use "notes" to briefly explain anything you're unsure about (e.g. "tip line is handwritten and hard to read"), or null if nothing to flag.
 - Every number must be the actual numeric value on the receipt — never estimate or round to a "plausible" number.`

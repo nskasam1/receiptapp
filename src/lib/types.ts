@@ -13,6 +13,8 @@ export interface Item {
   totalPriceCents: number
   /** personId -> relative units (e.g. 2 of 3 fries -> 2). Absence = unassigned. */
   assignments: Record<PersonId, number>
+  /** Flagged by OCR as an uncertain read — surfaced as a gentle nudge to review, not an error. */
+  lowConfidence?: boolean
 }
 
 export type TipBasis = 'subtotal' | 'total'
@@ -40,8 +42,6 @@ export interface SplitResult {
   differenceCents: number
   unassignedItemCount: number
 }
-
-export const PERSON_COLOR_COUNT = 6
 
 export const STEPS = ['scan', 'people', 'items', 'assign', 'taxtip', 'summary', 'share'] as const
 export type Step = (typeof STEPS)[number]

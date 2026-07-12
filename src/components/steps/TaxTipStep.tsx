@@ -17,14 +17,14 @@ function MoneyInput({
   const [text, setText] = useState(cents ? formatCents(cents).slice(1) : '')
   return (
     <div className="flex items-center gap-1 rounded-lg border border-border bg-surface px-3 py-2.5">
-      <span className="text-[15px] text-faint">$</span>
+      <span className="font-mono-tabular text-[15px] text-muted">$</span>
       <input
         inputMode="decimal"
         value={text}
         onChange={(e) => setText(e.target.value)}
         onBlur={() => onCommit(parseDollarsToCents(text))}
         placeholder={placeholder}
-        className="w-full bg-transparent text-[15px] tabular-nums text-ink placeholder:text-faint focus:outline-none"
+        className="w-full bg-transparent font-mono-tabular text-[15px] text-ink placeholder:text-muted"
       />
     </div>
   )
@@ -63,13 +63,14 @@ export function TaxTipStep() {
           onPrimary={nextStep}
           info={
             <span className="text-[13px] text-muted">
-              Total <span className="font-semibold text-ink tabular-nums">{formatCents(totalCents)}</span>
+              Total{' '}
+              <span className="font-mono-tabular font-semibold text-ink">{formatCents(totalCents)}</span>
             </span>
           }
         />
       }
     >
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         <div>
           <label className="mb-1.5 block text-[13px] text-muted">Tax (as shown on the receipt)</label>
           <MoneyInput cents={taxCents} onCommit={setTaxCents} />
@@ -96,9 +97,9 @@ export function TaxTipStep() {
                 step={1}
                 value={tipValue}
                 onChange={(e) => setTipValue(Number(e.target.value))}
-                className="flex-1 accent-[var(--color-primary)]"
+                className="flex-1 accent-primary"
               />
-              <span className="w-14 shrink-0 text-right text-[16px] font-semibold tabular-nums">
+              <span className="font-mono-tabular w-14 shrink-0 text-right text-[16px] font-semibold">
                 {tipValue}%
               </span>
             </div>
@@ -120,9 +121,7 @@ export function TaxTipStep() {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13px] text-muted">
-            Split tax &amp; tip
-          </label>
+          <label className="mb-1.5 block text-[13px] text-muted">Split tax &amp; tip</label>
           <Toggle
             value={splitBasis}
             onChange={setSplitBasis}
@@ -133,22 +132,24 @@ export function TaxTipStep() {
           />
         </div>
 
-        <div className="rounded-xl bg-surface p-3.5">
+        <div>
           <div className="flex justify-between text-[14px] text-muted">
             <span>Subtotal</span>
-            <span className="tabular-nums text-ink">{formatCents(subtotalCents)}</span>
+            <span className="font-mono-tabular text-ink">{formatCents(subtotalCents)}</span>
           </div>
-          <div className="mt-1.5 flex justify-between text-[14px] text-muted">
+          <div className="mt-2 flex justify-between text-[14px] text-muted">
             <span>Tax</span>
-            <span className="tabular-nums text-ink">{formatCents(taxCents)}</span>
+            <span className="font-mono-tabular text-ink">{formatCents(taxCents)}</span>
           </div>
-          <div className="mt-1.5 flex justify-between text-[14px] text-muted">
+          <div className="mt-2 flex justify-between text-[14px] text-muted">
             <span>Tip</span>
-            <span className="tabular-nums text-ink">{formatCents(tipCents)}</span>
+            <span className="font-mono-tabular text-ink">{formatCents(tipCents)}</span>
           </div>
-          <div className="mt-2 flex justify-between border-t border-border pt-2 text-[15px] font-semibold">
-            <span>Total</span>
-            <span className="tabular-nums">{formatCents(totalCents)}</span>
+          <div className="mt-3 flex items-baseline justify-between border-t border-border pt-3">
+            <span className="text-[15px] font-semibold">Total</span>
+            <span key={totalCents} className="animate-settle font-mono-tabular text-[22px] font-bold">
+              {formatCents(totalCents)}
+            </span>
           </div>
         </div>
 
