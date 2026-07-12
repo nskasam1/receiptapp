@@ -1,17 +1,12 @@
-import 'dotenv/config'
-import express from 'express'
-import { parseReceiptCore } from './parseReceiptCore.ts'
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { parseReceiptCore } from '../server/parseReceiptCore.ts'
 
-const PORT = Number(process.env.PORT) || 8787
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'method_not_allowed' })
+    return
+  }
 
-const app = express()
-app.use(express.json({ limit: '15mb' }))
-
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, ocrConfigured: Boolean(process.env.ANTHROPIC_API_KEY) })
-})
-
-app.post('/api/parse-receipt', async (req, res) => {
   const { imageBase64, mediaType } = req.body ?? {}
   const result = await parseReceiptCore(imageBase64, mediaType)
 
@@ -47,11 +42,7 @@ app.post('/api/parse-receipt', async (req, res) => {
       res.status(502).json({ error: 'upstream_error' })
       return
     case 'ok':
-      res.json(result.data)
+      res.status(200).json(result.data)
       return
   }
-})
-
-app.listen(PORT, () => {
-  console.log(`SplitScan OCR server listening on http://localhost:${PORT}`)
-})
+}

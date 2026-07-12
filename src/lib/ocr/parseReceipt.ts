@@ -28,6 +28,12 @@ export async function parseReceiptImage(file: File): Promise<ParseReceiptOutcome
     }
   }
   if (response.status === 429) return { status: 'error', message: 'Too many scans right now — try again in a moment' }
+  if ([502, 503, 504].includes(response.status)) {
+    return {
+      status: 'error',
+      message: "The scanning server isn't running — start it with `npm run server` (or `npm run dev`, which now starts everything together) and try again",
+    }
+  }
   if (response.status === 422) {
     const body = await response.json().catch(() => null)
     return {
