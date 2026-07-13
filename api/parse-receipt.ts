@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { parseReceiptCore } from '../server/parseReceiptCore.ts'
+import { parseReceiptCore } from '../server/parseReceiptCore.js'
 
 // Vision calls on a busy multi-item receipt can take longer than the 10s
 // default — request the highest duration available on the plan (Vercel caps

@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { EXTRACTION_PROMPT, RECEIPT_JSON_SCHEMA } from './receiptSchema.ts'
+import { EXTRACTION_PROMPT, RECEIPT_JSON_SCHEMA } from './receiptSchema.js'
 
 const MODEL = 'claude-opus-4-8'
 const ALLOWED_MEDIA_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])

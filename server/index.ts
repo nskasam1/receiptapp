@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import express from 'express'
-import { parseReceiptCore } from './parseReceiptCore.ts'
+import { parseReceiptCore } from './parseReceiptCore.js'
 
 const PORT = Number(process.env.PORT) || 8787
 
