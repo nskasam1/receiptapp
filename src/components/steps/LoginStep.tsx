@@ -11,7 +11,7 @@ import { Icon, type IconName } from '../ui/Icon'
 const FEATURES: { icon: IconName; text: string }[] = [
   { icon: 'receipt', text: 'Scan a receipt — Claude reads every item off it' },
   { icon: 'split', text: 'Split it fairly, down to the exact cent' },
-  { icon: 'share', text: 'Share the total, or send a link straight to Venmo' },
+  { icon: 'share', text: 'Share the total, or send a link straight to your payment app' },
 ]
 
 export function LoginStep() {
