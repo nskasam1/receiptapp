@@ -79,6 +79,7 @@ export function PeopleStep() {
 
   const addedNames = new Set(people.map((p) => p.name.toLowerCase()))
   const quickAddPeople = knownPeople.filter((p) => !addedNames.has(p.name.toLowerCase()))
+  const hasMe = people.some((p) => p.name === 'ME')
 
   return (
     <StepShell
@@ -103,6 +104,18 @@ export function PeopleStep() {
         />
       }
     >
+      {user && !hasMe && (
+        <button
+          type="button"
+          onClick={() => addPerson('ME')}
+          className="mb-3 flex w-full items-center gap-3 rounded-xl border border-primary/30 bg-surface px-3.5 py-3 text-left hover:bg-primary-hover/10"
+        >
+          <PersonAvatar name="ME" size={36} />
+          <span className="flex-1 text-[15px] font-medium text-ink">Add myself</span>
+          <Icon name="plus" size={16} className="shrink-0 text-primary" />
+        </button>
+      )}
+
       <form
         onSubmit={(e) => {
           e.preventDefault()

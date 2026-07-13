@@ -8,6 +8,7 @@ import { fetchPaymentHandles, type PaymentHandle } from '../../lib/supabase/paym
 import { StepShell } from '../StepShell'
 import { BottomBar } from '../BottomBar'
 import { PersonAvatar } from '../ui/PersonAvatar'
+import { PersonChip } from '../ui/Chip'
 import { BrandIcon } from '../ui/BrandIcon'
 import { Icon } from '../ui/Icon'
 import { Toggle } from '../ui/Toggle'
@@ -22,11 +23,19 @@ export function ShareStep() {
   const tipBasis = useReceiptStore((s) => s.tipBasis)
   const splitBasis = useReceiptStore((s) => s.splitBasis)
   const enteredGrandTotalCents = useReceiptStore((s) => s.enteredGrandTotalCents)
+  const payerId = useReceiptStore((s) => s.payerId)
+  const setPayerId = useReceiptStore((s) => s.setPayerId)
   const prevStep = useReceiptStore((s) => s.prevStep)
   const reset = useReceiptStore((s) => s.reset)
 
   const [format, setFormat] = useState<'itemized' | 'short'>('itemized')
   const [toast, setToast] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (payerId !== null) return
+    const me = people.find((p) => p.name === 'ME')
+    if (me) setPayerId(me.id)
+  }, [people, payerId, setPayerId])
 
   const { user } = useAuth()
   const [paymentHandles, setPaymentHandles] = useState<PaymentHandle[]>([])
@@ -44,6 +53,25 @@ export function ShareStep() {
     const tipCents = computeTipCents(tipMode, tipValue, tipBasis, subtotalCents, taxCents)
     return computeSplit({ people, items, taxCents, tipCents, splitBasis, enteredGrandTotalCents })
   }, [people, items, taxCents, tipMode, tipValue, tipBasis, splitBasis, enteredGrandTotalCents])
+
+  const payer = people.find((p) => p.id === payerId) ?? null
+  const owingPeople =
+    payerId && people.length > 1 ? result.people.filter((split) => split.personId !== payerId) : result.people
+
+  function buildPaymentLinesText(): string {
+    const lines = PAYMENT_PROVIDERS.map((p) => {
+      const saved = paymentHandles.find((h) => h.provider === p.id)
+      if (!saved) return null
+      const link = buildPaymentLink(p.id, saved.handle)
+      return `${p.label}: ${link ?? saved.handle}`
+    }).filter((line): line is string => line !== null)
+    return lines.join('\n')
+  }
+
+  function withPaymentLinks(text: string): string {
+    const paymentLines = buildPaymentLinesText()
+    return paymentLines ? `${text}\n\nPay me via:\n${paymentLines}` : text
+  }
 
   async function handleShare(text: string) {
     const outcome = await shareText(text)
@@ -69,7 +97,7 @@ export function ShareStep() {
       bottomBar={
         <BottomBar
           primaryLabel="Share the breakdown"
-          onPrimary={() => handleShare(buildGroupSummaryText(result.people, format === 'itemized'))}
+          onPrimary={() => handleShare(withPaymentLinks(buildGroupSummaryText(owingPeople, format === 'itemized')))}
           variant="accent"
           secondary={
             <button type="button" onClick={reset} className="px-2 text-[13px] font-medium text-primary">
@@ -79,6 +107,27 @@ export function ShareStep() {
         />
       }
     >
+      {people.length > 1 && (
+        <div className="mb-4">
+          <div className="mb-2 text-[13px] text-muted">Who paid?</div>
+          <div className="flex flex-wrap gap-2">
+            {people.map((p) => (
+              <PersonChip
+                key={p.id}
+                name={p.name === 'ME' ? 'ME' : p.name}
+                selected={p.id === payerId}
+                onToggle={() => setPayerId(p.id === payerId ? null : p.id)}
+              />
+            ))}
+          </div>
+          {payer && (
+            <p className="mt-2 text-[12px] text-muted">
+              Showing what everyone else owes {payer.name === 'ME' ? 'you' : payer.name}.
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="mb-4 flex items-center justify-between">
         <span className="text-[13px] text-muted">Message format</span>
         <Toggle
@@ -92,7 +141,7 @@ export function ShareStep() {
       </div>
 
       <ul className="flex flex-col gap-2.5">
-        {result.people.map((split) => {
+        {owingPeople.map((split) => {
           const text = format === 'itemized' ? buildItemizedText(split) : buildShortText(split)
           return (
             <li
@@ -106,7 +155,7 @@ export function ShareStep() {
               </div>
               <button
                 type="button"
-                onClick={() => handleShare(text)}
+                onClick={() => handleShare(withPaymentLinks(text))}
                 aria-label={`Share amount owed to ${split.name}`}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary text-primary hover:bg-primary hover:text-primary-ink"
               >

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Item, Person, SplitBasis, Step, TipBasis, TipMode } from '../lib/types'
+import type { Item, Person, PersonId, SplitBasis, Step, TipBasis, TipMode } from '../lib/types'
 import { STEPS } from '../lib/types'
 import type { ParsedReceipt } from '../lib/ocr/types'
 
@@ -18,6 +18,7 @@ interface ReceiptState {
   tipBasis: TipBasis
   splitBasis: SplitBasis
   enteredGrandTotalCents: number | null
+  payerId: PersonId | null
 
   goToStep: (step: Step) => void
   nextStep: () => void
@@ -43,6 +44,7 @@ interface ReceiptState {
   setTipBasis: (basis: TipBasis) => void
   setSplitBasis: (basis: SplitBasis) => void
   setEnteredGrandTotalCents: (cents: number | null) => void
+  setPayerId: (id: PersonId | null) => void
 
   reset: () => void
 }
@@ -57,6 +59,7 @@ const initialState = {
   tipBasis: 'subtotal' as TipBasis,
   splitBasis: 'proportional' as SplitBasis,
   enteredGrandTotalCents: null as number | null,
+  payerId: null as PersonId | null,
 }
 
 export const useReceiptStore = create<ReceiptState>()(
@@ -93,6 +96,7 @@ export const useReceiptStore = create<ReceiptState>()(
             delete assignments[id]
             return { ...item, assignments }
           }),
+          payerId: get().payerId === id ? null : get().payerId,
         })
       },
       renamePerson: (id, name) => {
@@ -195,6 +199,7 @@ export const useReceiptStore = create<ReceiptState>()(
       setTipBasis: (basis) => set({ tipBasis: basis }),
       setSplitBasis: (basis) => set({ splitBasis: basis }),
       setEnteredGrandTotalCents: (cents) => set({ enteredGrandTotalCents: cents }),
+      setPayerId: (id) => set({ payerId: id }),
 
       reset: () => set({ ...initialState, step: 'scan', items: [], people: [] }),
     }),
