@@ -28,12 +28,16 @@
   --color-accent-text: #a25551;
 
   --z-sticky: 20;
+  --z-celebration: 30;
   --z-toast: 50;
 
   --animate-rise: rise 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-in-forward: slide-in-forward 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-in-back: slide-in-back 0.34s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-toast-in: toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-scan-sweep: scan-sweep 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
   --animate-settle: settle 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-confetti-burst: confetti-burst 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 
   @keyframes rise {
     from {
@@ -43,6 +47,36 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+  @keyframes slide-in-forward {
+    from {
+      opacity: 0;
+      transform: translateX(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes slide-in-back {
+    from {
+      opacity: 0;
+      transform: translateX(-18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes confetti-burst {
+    0% {
+      opacity: 1;
+      transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) rotate(var(--angle)) translateX(var(--distance)) scale(0.4);
     }
   }
   @keyframes toast-in {

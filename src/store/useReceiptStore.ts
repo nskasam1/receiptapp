@@ -48,7 +48,7 @@ interface ReceiptState {
 }
 
 const initialState = {
-  step: 'scan' as Step,
+  step: 'login' as Step,
   people: [] as Person[],
   items: [] as Item[],
   taxCents: 0,
@@ -196,7 +196,7 @@ export const useReceiptStore = create<ReceiptState>()(
       setSplitBasis: (basis) => set({ splitBasis: basis }),
       setEnteredGrandTotalCents: (cents) => set({ enteredGrandTotalCents: cents }),
 
-      reset: () => set({ ...initialState, items: [], people: [] }),
+      reset: () => set({ ...initialState, step: 'scan', items: [], people: [] }),
     }),
     {
       name: 'splitscan.session.v1',

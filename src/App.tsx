@@ -1,4 +1,8 @@
+import { useRef } from 'react'
 import { useReceiptStore } from './store/useReceiptStore'
+import { STEPS } from './lib/types'
+import { NavigationDirectionContext, type NavigationDirection } from './lib/navigationDirection'
+import { LoginStep } from './components/steps/LoginStep'
 import { ScanStep } from './components/steps/ScanStep'
 import { PeopleStep } from './components/steps/PeopleStep'
 import { ItemsStep } from './components/steps/ItemsStep'
@@ -10,22 +14,40 @@ import { ShareStep } from './components/steps/ShareStep'
 function App() {
   const step = useReceiptStore((s) => s.step)
 
+  const currentIndex = STEPS.indexOf(step)
+  const prevIndexRef = useRef(currentIndex)
+  const direction: NavigationDirection = currentIndex < prevIndexRef.current ? 'back' : 'forward'
+  prevIndexRef.current = currentIndex
+
+  let content: React.ReactNode
   switch (step) {
+    case 'login':
+      content = <LoginStep />
+      break
     case 'scan':
-      return <ScanStep />
+      content = <ScanStep />
+      break
     case 'people':
-      return <PeopleStep />
+      content = <PeopleStep />
+      break
     case 'items':
-      return <ItemsStep />
+      content = <ItemsStep />
+      break
     case 'assign':
-      return <AssignStep />
+      content = <AssignStep />
+      break
     case 'taxtip':
-      return <TaxTipStep />
+      content = <TaxTipStep />
+      break
     case 'summary':
-      return <SummaryStep />
+      content = <SummaryStep />
+      break
     case 'share':
-      return <ShareStep />
+      content = <ShareStep />
+      break
   }
+
+  return <NavigationDirectionContext.Provider value={direction}>{content}</NavigationDirectionContext.Provider>
 }
 
 export default App

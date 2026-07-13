@@ -43,5 +43,5 @@ export interface SplitResult {
   unassignedItemCount: number
 }
 
-export const STEPS = ['scan', 'people', 'items', 'assign', 'taxtip', 'summary', 'share'] as const
+export const STEPS = ['login', 'scan', 'people', 'items', 'assign', 'taxtip', 'summary', 'share'] as const
 export type Step = (typeof STEPS)[number]

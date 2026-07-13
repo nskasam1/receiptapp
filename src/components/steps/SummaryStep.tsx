@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
 import { computeSplit, computeTipCents, formatCents } from '../../lib/split'
 import { StepShell } from '../StepShell'
 import { BottomBar } from '../BottomBar'
 import { PersonAvatar } from '../ui/PersonAvatar'
 import { TornEdge } from '../ui/TornEdge'
+import { Confetti } from '../ui/Confetti'
 import { Icon } from '../ui/Icon'
 
 export function SummaryStep() {
@@ -18,6 +19,12 @@ export function SummaryStep() {
   const enteredGrandTotalCents = useReceiptStore((s) => s.enteredGrandTotalCents)
   const nextStep = useReceiptStore((s) => s.nextStep)
   const prevStep = useReceiptStore((s) => s.prevStep)
+
+  const [showConfetti, setShowConfetti] = useState(true)
+  useEffect(() => {
+    const timer = setTimeout(() => setShowConfetti(false), 900)
+    return () => clearTimeout(timer)
+  }, [])
 
   const result = useMemo(() => {
     const subtotalCents = items.reduce((sum, i) => sum + i.totalPriceCents, 0)
@@ -46,6 +53,8 @@ export function SummaryStep() {
         />
       }
     >
+      {showConfetti && <Confetti />}
+
       {enteredGrandTotalCents !== null && (
         <div className="mb-3 flex items-center gap-2 rounded-xl border border-border px-3.5 py-2.5 text-[13px] text-muted">
           <Icon name={result.reconciles ? 'check' : 'alert'} size={16} className={result.reconciles ? 'text-primary' : 'text-accent-text'} />
