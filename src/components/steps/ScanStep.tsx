@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
 import { parseReceiptImage } from '../../lib/ocr/parseReceipt'
 import type { ParseReceiptOutcome } from '../../lib/ocr/types'
+import { isSupabaseConfigured } from '../../lib/supabase/client'
+import { useAuth } from '../../lib/supabase/useAuth'
 import { StepShell } from '../StepShell'
 import { BottomBar } from '../BottomBar'
+import { AuthForm } from '../ui/AuthForm'
 import { Icon } from '../ui/Icon'
 
 type ScanState =
@@ -21,6 +24,10 @@ export function ScanStep() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const libraryInputRef = useRef<HTMLInputElement>(null)
+
+  const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
+  const [showAuthForm, setShowAuthForm] = useState(false)
+  const [continuedAsGuest, setContinuedAsGuest] = useState(false)
 
   useEffect(() => {
     return () => {
@@ -60,6 +67,53 @@ export function ScanStep() {
       bottomBar={<BottomBar primaryLabel="Enter items manually" onPrimary={nextStep} />}
     >
       <div className="flex flex-col items-center py-2 text-center">
+        {isSupabaseConfigured && !authLoading && (
+          <div className="mb-6 w-full max-w-xs">
+            {user ? (
+              <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
+                <span className="truncate text-[13px] text-muted">Signed in as {user.email}</span>
+                <button type="button" onClick={signOut} className="shrink-0 text-[13px] font-medium text-primary">
+                  Sign out
+                </button>
+              </div>
+            ) : showAuthForm ? (
+              <div className="animate-rise flex flex-col gap-2">
+                <AuthForm onSignIn={signIn} onSignUp={signUp} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAuthForm(false)
+                    setContinuedAsGuest(true)
+                  }}
+                  className="text-[13px] font-medium text-muted"
+                >
+                  Continue as guest instead
+                </button>
+              </div>
+            ) : continuedAsGuest ? null : (
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-left">
+                <p className="text-[13px] text-muted">Log in to save people across your devices</p>
+                <div className="flex shrink-0 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setContinuedAsGuest(true)}
+                    className="text-[13px] font-medium text-muted"
+                  >
+                    Guest
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAuthForm(true)}
+                    className="text-[13px] font-semibold text-primary"
+                  >
+                    Log in
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="relative mb-5 flex aspect-[4/3] w-full max-w-xs items-center justify-center overflow-hidden rounded-2xl bg-primary-hover">
           {previewUrl ? (
             <img src={previewUrl} alt="" className="h-full w-full object-cover" />

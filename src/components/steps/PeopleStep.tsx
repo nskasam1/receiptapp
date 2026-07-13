@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
-import { isSupabaseConfigured } from '../../lib/supabase/client'
 import { useAuth } from '../../lib/supabase/useAuth'
 import { fetchKnownPeople, forgetPerson, rememberPerson, type KnownPerson } from '../../lib/supabase/knownPeople'
 import { StepShell } from '../StepShell'
 import { BottomBar } from '../BottomBar'
 import { PersonAvatar } from '../ui/PersonAvatar'
-import { AuthForm } from '../ui/AuthForm'
 import { Icon } from '../ui/Icon'
 
 export function PeopleStep() {
@@ -17,7 +15,7 @@ export function PeopleStep() {
   const prevStep = useReceiptStore((s) => s.prevStep)
 
   const [name, setName] = useState('')
-  const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
+  const { user } = useAuth()
   const [knownPeople, setKnownPeople] = useState<KnownPerson[]>([])
 
   useEffect(() => {
@@ -150,21 +148,6 @@ export function PeopleStep() {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {isSupabaseConfigured && !authLoading && (
-        <div className="mt-6">
-          {user ? (
-            <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
-              <span className="truncate text-[13px] text-muted">Synced as {user.email}</span>
-              <button type="button" onClick={signOut} className="shrink-0 text-[13px] font-medium text-primary">
-                Sign out
-              </button>
-            </div>
-          ) : (
-            <AuthForm onSignIn={signIn} onSignUp={signUp} />
-          )}
         </div>
       )}
     </StepShell>
