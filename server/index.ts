@@ -28,6 +28,9 @@ app.post('/api/parse-receipt', async (req, res) => {
     case 'refused':
       res.status(422).json({ error: 'refused' })
       return
+    case 'not_a_receipt':
+      res.status(422).json({ error: 'not_a_receipt', notes: result.notes })
+      return
     case 'truncated':
       res.status(422).json({ error: 'truncated' })
       return

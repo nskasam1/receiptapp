@@ -1,6 +1,7 @@
 export const RECEIPT_JSON_SCHEMA = {
   type: 'object',
   properties: {
+    isReceipt: { type: 'boolean' },
     merchantName: { type: ['string', 'null'] },
     subtotal: { type: ['number', 'null'] },
     tax: { type: ['number', 'null'] },
@@ -23,11 +24,17 @@ export const RECEIPT_JSON_SCHEMA = {
       },
     },
   },
-  required: ['merchantName', 'subtotal', 'tax', 'tip', 'grandTotal', 'confidence', 'notes', 'items'],
+  required: ['isReceipt', 'merchantName', 'subtotal', 'tax', 'tip', 'grandTotal', 'confidence', 'notes', 'items'],
   additionalProperties: false,
 } as const
 
-export const EXTRACTION_PROMPT = `You are reading a photo of a physical receipt (restaurant, grocery store, etc.) to extract structured data. Read every line item exactly as printed, including quantity and price.
+export const EXTRACTION_PROMPT = `You are reading a photo to extract structured data from a physical receipt (restaurant, grocery store, etc.).
+
+First, decide whether the image is actually a photo of a receipt or itemized bill.
+- If it is NOT a receipt (e.g. a random object, a person, a blank surface, an unrelated document), set "isReceipt" to false, set "merchantName", "subtotal", "tax", "tip", and "grandTotal" to null, "items" to an empty array, "confidence" to "low", and use "notes" to briefly say what the image actually shows instead. Do not guess at receipt data for a non-receipt image.
+- If it IS a receipt, set "isReceipt" to true and extract it fully per the rules below.
+
+Read every line item exactly as printed, including quantity and price.
 
 Rules:
 - "totalPrice" is the line's total for that item (not the unit price), in dollars as a plain number (e.g. 12.99, not "$12.99").

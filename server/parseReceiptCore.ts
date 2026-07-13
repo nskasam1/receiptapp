@@ -9,6 +9,7 @@ export type ParseReceiptResult =
   | { kind: 'missing_image' }
   | { kind: 'unsupported_media_type' }
   | { kind: 'refused' }
+  | { kind: 'not_a_receipt'; notes: string | null }
   | { kind: 'truncated' }
   | { kind: 'no_output' }
   | { kind: 'rate_limited' }
@@ -55,7 +56,10 @@ export async function parseReceiptCore(imageBase64: unknown, mediaType: unknown)
     const textBlock = response.content.find((block) => block.type === 'text')
     if (!textBlock || textBlock.type !== 'text') return { kind: 'no_output' }
 
-    return { kind: 'ok', data: JSON.parse(textBlock.text) }
+    const data = JSON.parse(textBlock.text)
+    if (data.isReceipt === false) return { kind: 'not_a_receipt', notes: data.notes ?? null }
+
+    return { kind: 'ok', data }
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) return { kind: 'rate_limited' }
     if (err instanceof Anthropic.AuthenticationError) return { kind: 'invalid_api_key' }

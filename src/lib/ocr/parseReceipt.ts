@@ -36,6 +36,14 @@ export async function parseReceiptImage(file: File): Promise<ParseReceiptOutcome
   }
   if (response.status === 422) {
     const body = await response.json().catch(() => null)
+    if (body?.error === 'not_a_receipt') {
+      return {
+        status: 'error',
+        message: body.notes
+          ? `That doesn't look like a receipt — ${body.notes.toLowerCase()}`
+          : "That doesn't look like a receipt — try a photo of an itemized bill, or enter items manually",
+      }
+    }
     return {
       status: 'error',
       message:
