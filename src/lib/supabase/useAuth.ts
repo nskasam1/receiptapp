@@ -28,7 +28,11 @@ export function useAuth() {
 
   async function signUp(email: string, password: string): Promise<AuthResult> {
     if (!supabase) return { ok: false, message: 'Sync is not configured yet' }
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    })
     if (error) return { ok: false, message: error.message }
     if (!data.session) {
       return { ok: true, message: 'Check your email to confirm your account, then sign in.' }
