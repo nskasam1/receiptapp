@@ -4,6 +4,7 @@ export type IconName =
   | 'plus'
   | 'trash'
   | 'chevron-left'
+  | 'chevron-right'
   | 'check'
   | 'share'
   | 'copy'
@@ -14,11 +15,13 @@ export type IconName =
   | 'receipt'
   | 'split'
   | 'edit'
+  | 'wallet'
 
 const paths: Record<IconName, ReactElement> = {
   plus: <path d="M12 5v14M5 12h14" />,
   trash: <path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0-.8 12.1A2 2 0 0 1 16.2 21H7.8a2 2 0 0 1-2-1.9L5 7h14Z" />,
   'chevron-left': <path d="m14 6-6 6 6 6" />,
+  'chevron-right': <path d="m10 6 6 6-6 6" />,
   check: <path d="m4 12 5 5L20 6" />,
   share: (
     <>
@@ -67,6 +70,13 @@ const paths: Record<IconName, ReactElement> = {
     <>
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </>
+  ),
+  wallet: (
+    <>
+      <path d="M20 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-3" />
+      <path d="M2 9V6a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2" />
+      <path d="M17 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
     </>
   ),
 }
