@@ -1,11 +1,18 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Item, Person, PersonId, SplitBasis, Step, TipBasis, TipMode } from '../lib/types'
 import { STEPS } from '../lib/types'
 import type { ParsedReceipt } from '../lib/ocr/types'
 
 function makeId(): string {
   return Math.random().toString(36).slice(2, 10)
+}
+
+// Session state now lives in sessionStorage (cleared once the tab/app actually
+// closes) instead of localStorage — drop the old localStorage copy so it
+// doesn't linger indefinitely with stale names in it.
+if (typeof localStorage !== 'undefined') {
+  localStorage.removeItem('splitscan.session.v1')
 }
 
 interface ReceiptState {
@@ -209,6 +216,7 @@ export const useReceiptStore = create<ReceiptState>()(
     }),
     {
       name: 'splitscan.session.v1',
+      storage: createJSONStorage(() => sessionStorage),
     },
   ),
 )
