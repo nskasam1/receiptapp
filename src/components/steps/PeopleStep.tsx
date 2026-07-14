@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
 import { useAuth } from '../../lib/supabase/useAuth'
+import { isSupabaseConfigured } from '../../lib/supabase/client'
 import { fetchKnownPeople, forgetPerson, rememberPerson, type KnownPerson } from '../../lib/supabase/knownPeople'
 import {
   fetchPeopleGroups,
@@ -380,7 +381,7 @@ export function PeopleStep() {
 
       {quickAddPeople.length > 0 && (
         <div className="mt-6">
-          <div className="mb-2 text-[13px] font-medium text-muted">People you know</div>
+          <div className="mb-2 text-[13px] font-medium text-muted">Frequent friends</div>
           <div className="flex flex-col gap-2">
             {quickAddPeople.map((p) => (
               <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border px-3.5 py-3">
@@ -404,6 +405,12 @@ export function PeopleStep() {
             ))}
           </div>
         </div>
+      )}
+
+      {isSupabaseConfigured && !user && (
+        <p className="mt-6 text-center text-[12px] text-muted">
+          Sign in to remember names for next time — as a guest, nothing is saved.
+        </p>
       )}
     </StepShell>
   )
