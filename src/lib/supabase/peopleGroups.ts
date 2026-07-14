@@ -30,6 +30,17 @@ export async function savePeopleGroup(userId: string, name: string, memberNames:
   if (error) console.error('savePeopleGroup failed:', error.message)
 }
 
+export async function updatePeopleGroup(groupId: string, name: string, memberNames: string[]): Promise<void> {
+  if (!supabase) return
+  const trimmed = name.trim()
+  if (!trimmed || memberNames.length === 0) return
+  const { error } = await supabase
+    .from('people_groups')
+    .update({ name: trimmed, member_names: memberNames })
+    .eq('id', groupId)
+  if (error) console.error('updatePeopleGroup failed:', error.message)
+}
+
 export async function deletePeopleGroup(groupId: string): Promise<void> {
   if (!supabase) return
   const { error } = await supabase.from('people_groups').delete().eq('id', groupId)

@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
 import { useAuth } from '../../lib/supabase/useAuth'
 import { fetchKnownPeople, forgetPerson, rememberPerson, type KnownPerson } from '../../lib/supabase/knownPeople'
-import { fetchPeopleGroups, savePeopleGroup, deletePeopleGroup, type PeopleGroup } from '../../lib/supabase/peopleGroups'
+import {
+  fetchPeopleGroups,
+  savePeopleGroup,
+  updatePeopleGroup,
+  deletePeopleGroup,
+  type PeopleGroup,
+} from '../../lib/supabase/peopleGroups'
 import { StepShell } from '../StepShell'
 import { BottomBar } from '../BottomBar'
 import { PersonAvatar } from '../ui/PersonAvatar'
@@ -22,6 +28,11 @@ export function PeopleStep() {
   const [showSaveGroup, setShowSaveGroup] = useState(false)
   const [groupName, setGroupName] = useState('')
   const [savingGroup, setSavingGroup] = useState(false)
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editMembers, setEditMembers] = useState<string[]>([])
+  const [editMemberDraft, setEditMemberDraft] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -75,6 +86,42 @@ export function PeopleStep() {
   async function handleDeleteGroup(id: string) {
     setGroups((prev) => prev.filter((g) => g.id !== id))
     await deletePeopleGroup(id)
+  }
+
+  function startEditGroup(group: PeopleGroup) {
+    setEditingGroupId(group.id)
+    setEditName(group.name)
+    setEditMembers(group.memberNames)
+    setEditMemberDraft('')
+  }
+
+  function cancelEditGroup() {
+    setEditingGroupId(null)
+    setEditMemberDraft('')
+  }
+
+  function addEditMember() {
+    const trimmed = editMemberDraft.trim()
+    if (!trimmed) return
+    if (!editMembers.some((m) => m.toLowerCase() === trimmed.toLowerCase())) {
+      setEditMembers((prev) => [...prev, trimmed])
+    }
+    setEditMemberDraft('')
+  }
+
+  function removeEditMember(name: string) {
+    setEditMembers((prev) => prev.filter((m) => m !== name))
+  }
+
+  async function handleSaveEditGroup() {
+    if (!editingGroupId) return
+    const trimmed = editName.trim()
+    if (!trimmed || editMembers.length === 0) return
+    setSavingEdit(true)
+    await updatePeopleGroup(editingGroupId, trimmed, editMembers)
+    if (user) setGroups(await fetchPeopleGroups(user.id))
+    setSavingEdit(false)
+    setEditingGroupId(null)
   }
 
   const addedNames = new Set(people.map((p) => p.name.toLowerCase()))
@@ -222,29 +269,111 @@ export function PeopleStep() {
         <div className="mt-6">
           <div className="mb-2 text-[13px] font-medium text-muted">Your groups</div>
           <div className="flex flex-col gap-2">
-            {groups.map((g) => (
-              <div key={g.id} className="flex items-center gap-3 rounded-xl border border-border px-3.5 py-3">
-                <button
-                  type="button"
-                  onClick={() => handleAddGroup(g)}
-                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                >
-                  <Icon name="users" size={14} className="shrink-0 text-primary" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-medium text-ink">{g.name}</span>
-                    <span className="block truncate text-[12px] text-muted">{g.memberNames.join(', ')}</span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteGroup(g.id)}
-                  aria-label={`Delete group ${g.name}`}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-accent-text"
-                >
-                  <Icon name="trash" size={14} />
-                </button>
-              </div>
-            ))}
+            {groups.map((g) =>
+              editingGroupId === g.id ? (
+                <div key={g.id} className="animate-rise flex flex-col gap-2.5 rounded-xl border border-primary/40 bg-surface px-3.5 py-3">
+                  <input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Group name"
+                    autoFocus
+                    className="rounded-lg border border-border bg-surface px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-primary"
+                  />
+
+                  {editMembers.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {editMembers.map((m) => (
+                        <span
+                          key={m}
+                          className="flex items-center gap-1 rounded-full border border-border bg-bg py-1 pl-2.5 pr-1 text-[13px] text-ink"
+                        >
+                          {m}
+                          <button
+                            type="button"
+                            onClick={() => removeEditMember(m)}
+                            aria-label={`Remove ${m} from group`}
+                            className="flex h-5 w-5 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-accent-text"
+                          >
+                            <Icon name="x" size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      addEditMember()
+                    }}
+                    className="flex gap-2"
+                  >
+                    <input
+                      value={editMemberDraft}
+                      onChange={(e) => setEditMemberDraft(e.target.value)}
+                      placeholder="Add a name"
+                      className="min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-[14px] text-ink placeholder:text-muted focus:border-primary"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!editMemberDraft.trim()}
+                      aria-label="Add member"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-ink disabled:opacity-35"
+                    >
+                      <Icon name="plus" size={16} />
+                    </button>
+                  </form>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={cancelEditGroup}
+                      className="text-[13px] font-medium text-muted"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveEditGroup}
+                      disabled={!editName.trim() || editMembers.length === 0 || savingEdit}
+                      className="rounded-lg bg-primary px-3.5 py-1.5 text-[13px] font-semibold text-primary-ink disabled:opacity-40"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div key={g.id} className="flex items-center gap-3 rounded-xl border border-border px-3.5 py-3">
+                  <button
+                    type="button"
+                    onClick={() => handleAddGroup(g)}
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                  >
+                    <Icon name="users" size={14} className="shrink-0 text-primary" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] font-medium text-ink">{g.name}</span>
+                      <span className="block truncate text-[12px] text-muted">{g.memberNames.join(', ')}</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => startEditGroup(g)}
+                    aria-label={`Edit group ${g.name}`}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-primary"
+                  >
+                    <Icon name="edit" size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteGroup(g.id)}
+                    aria-label={`Delete group ${g.name}`}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-accent-text"
+                  >
+                    <Icon name="trash" size={14} />
+                  </button>
+                </div>
+              ),
+            )}
           </div>
         </div>
       )}

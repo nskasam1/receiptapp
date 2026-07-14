@@ -78,6 +78,11 @@ create policy "Users can add their own groups"
   on people_groups for insert
   with check (auth.uid() = user_id);
 
+create policy "Users can update their own groups"
+  on people_groups for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 create policy "Users can delete their own groups"
   on people_groups for delete
   using (auth.uid() = user_id);
