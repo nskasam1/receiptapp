@@ -34,6 +34,8 @@ export function TaxTipStep() {
   const items = useReceiptStore((s) => s.items)
   const taxCents = useReceiptStore((s) => s.taxCents)
   const setTaxCents = useReceiptStore((s) => s.setTaxCents)
+  const feeCents = useReceiptStore((s) => s.feeCents)
+  const setFeeCents = useReceiptStore((s) => s.setFeeCents)
   const tipMode = useReceiptStore((s) => s.tipMode)
   const setTipMode = useReceiptStore((s) => s.setTipMode)
   const tipValue = useReceiptStore((s) => s.tipValue)
@@ -49,7 +51,7 @@ export function TaxTipStep() {
 
   const subtotalCents = items.reduce((sum, i) => sum + i.totalPriceCents, 0)
   const tipCents = computeTipCents(tipMode, tipValue, tipBasis, subtotalCents, taxCents)
-  const totalCents = subtotalCents + taxCents + tipCents
+  const totalCents = subtotalCents + taxCents + tipCents + feeCents
 
   return (
     <StepShell
@@ -74,6 +76,13 @@ export function TaxTipStep() {
         <div>
           <label className="mb-1.5 block text-[13px] text-muted">Tax (as shown on the receipt)</label>
           <MoneyInput cents={taxCents} onCommit={setTaxCents} />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-[13px] text-muted">
+            Other fees (card surcharge, delivery, service fee, etc.)
+          </label>
+          <MoneyInput cents={feeCents} onCommit={setFeeCents} />
         </div>
 
         <div>
@@ -145,6 +154,12 @@ export function TaxTipStep() {
             <span>Tip</span>
             <span className="font-mono-tabular text-ink">{formatCents(tipCents)}</span>
           </div>
+          {feeCents > 0 && (
+            <div className="mt-2 flex justify-between text-[14px] text-muted">
+              <span>Other fees</span>
+              <span className="font-mono-tabular text-ink">{formatCents(feeCents)}</span>
+            </div>
+          )}
           <div className="mt-3 flex items-baseline justify-between border-t border-border pt-3">
             <span className="text-[15px] font-semibold">Total</span>
             <span key={totalCents} className="animate-settle font-mono-tabular text-[22px] font-bold">

@@ -8,14 +8,20 @@ export const PAYMENT_PROVIDERS: { id: PaymentProvider; label: string; placeholde
 ]
 
 /**
- * Zelle has no public "pay this handle" URL scheme — transfers only happen
- * inside the sender's own banking app, so there's nothing to link to. Every
- * other provider returns a clickable pay link; Zelle returns null and callers
- * should show the handle as plain text to copy instead.
- *
+ * Zelle has no public "pay this specific handle" URL scheme — transfers only
+ * happen inside the sender's own banking app (or the standalone Zelle app),
+ * so there's no link that can pre-fill a recipient or amount the way Venmo,
+ * Cash App, and PayPal do. `ZELLE_WEBSITE_URL` is the best real link
+ * available; callers should show it alongside the handle (which still has to
+ * be entered manually inside Zelle) rather than in place of it.
+ */
+export const ZELLE_WEBSITE_URL = 'https://www.zellepay.com/'
+
+/**
  * `amountCents` is optional: pass it to pre-fill a specific amount (Venmo,
  * Cash App, and PayPal all support this in their URL), or omit it for a
- * generic profile/pay-me link the recipient fills in themselves.
+ * generic profile/pay-me link the recipient fills in themselves. Returns
+ * null for Zelle — see `ZELLE_WEBSITE_URL` above.
  */
 export function buildPaymentLink(provider: PaymentProvider, handle: string, amountCents?: number): string | null {
   const amount = amountCents === undefined ? null : (amountCents / 100).toFixed(2)

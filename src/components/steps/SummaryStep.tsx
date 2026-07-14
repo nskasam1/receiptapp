@@ -12,6 +12,7 @@ export function SummaryStep() {
   const people = useReceiptStore((s) => s.people)
   const items = useReceiptStore((s) => s.items)
   const taxCents = useReceiptStore((s) => s.taxCents)
+  const feeCents = useReceiptStore((s) => s.feeCents)
   const tipMode = useReceiptStore((s) => s.tipMode)
   const tipValue = useReceiptStore((s) => s.tipValue)
   const tipBasis = useReceiptStore((s) => s.tipBasis)
@@ -29,8 +30,8 @@ export function SummaryStep() {
   const result = useMemo(() => {
     const subtotalCents = items.reduce((sum, i) => sum + i.totalPriceCents, 0)
     const tipCents = computeTipCents(tipMode, tipValue, tipBasis, subtotalCents, taxCents)
-    return computeSplit({ people, items, taxCents, tipCents, splitBasis, enteredGrandTotalCents })
-  }, [people, items, taxCents, tipMode, tipValue, tipBasis, splitBasis, enteredGrandTotalCents])
+    return computeSplit({ people, items, taxCents, tipCents, feeCents, splitBasis, enteredGrandTotalCents })
+  }, [people, items, taxCents, feeCents, tipMode, tipValue, tipBasis, splitBasis, enteredGrandTotalCents])
 
   return (
     <StepShell
@@ -127,6 +128,13 @@ export function SummaryStep() {
             <span className="leader" />
             <span className="font-mono-tabular text-[13px] text-muted">{formatCents(result.tipCents)}</span>
           </div>
+          {result.feeCents > 0 && (
+            <div className="flex items-baseline">
+              <span className="text-[13px] text-muted">Other fees</span>
+              <span className="leader" />
+              <span className="font-mono-tabular text-[13px] text-muted">{formatCents(result.feeCents)}</span>
+            </div>
+          )}
         </div>
 
         <div className="mt-3 flex items-baseline justify-between border-t border-border pt-3">

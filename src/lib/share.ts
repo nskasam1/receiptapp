@@ -9,6 +9,7 @@ export function buildItemizedText(split: PersonSplit): string {
   const lines = split.items.map((i) => `${i.name} ${formatCents(i.shareCents)}`)
   if (split.taxShareCents > 0) lines.push(`tax ${formatCents(split.taxShareCents)}`)
   if (split.tipShareCents > 0) lines.push(`tip ${formatCents(split.tipShareCents)}`)
+  if (split.feeShareCents > 0) lines.push(`fees ${formatCents(split.feeShareCents)}`)
   return `${lines.join(', ')} = ${formatCents(split.totalCents)} total`
 }
 

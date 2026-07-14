@@ -13,6 +13,7 @@ interface ReceiptState {
   people: Person[]
   items: Item[]
   taxCents: number
+  feeCents: number
   tipMode: TipMode
   tipValue: number // dollars if flat, percent points if percent
   tipBasis: TipBasis
@@ -39,6 +40,7 @@ interface ReceiptState {
   setAssignmentUnits: (itemId: string, personId: string, units: number) => void
 
   setTaxCents: (cents: number) => void
+  setFeeCents: (cents: number) => void
   setTipMode: (mode: TipMode) => void
   setTipValue: (value: number) => void
   setTipBasis: (basis: TipBasis) => void
@@ -60,6 +62,7 @@ const initialState = {
   splitBasis: 'proportional' as SplitBasis,
   enteredGrandTotalCents: null as number | null,
   payerId: null as PersonId | null,
+  feeCents: 0,
 }
 
 export const useReceiptStore = create<ReceiptState>()(
@@ -194,6 +197,7 @@ export const useReceiptStore = create<ReceiptState>()(
       },
 
       setTaxCents: (cents) => set({ taxCents: cents }),
+      setFeeCents: (cents) => set({ feeCents: cents }),
       setTipMode: (mode) => set({ tipMode: mode }),
       setTipValue: (value) => set({ tipValue: value }),
       setTipBasis: (basis) => set({ tipBasis: basis }),

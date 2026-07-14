@@ -28,6 +28,7 @@ export interface PersonSplit {
   subtotalShareCents: number
   taxShareCents: number
   tipShareCents: number
+  feeShareCents: number
   totalCents: number
 }
 
@@ -36,6 +37,7 @@ export interface SplitResult {
   subtotalCents: number
   taxCents: number
   tipCents: number
+  feeCents: number
   computedGrandTotalCents: number
   enteredGrandTotalCents: number | null
   reconciles: boolean

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
 import { computeSplit, computeTipCents } from '../../lib/split'
 import { buildGroupSummaryText, buildItemizedText, buildShortText, shareText } from '../../lib/share'
-import { buildPaymentLink, PAYMENT_PROVIDERS } from '../../lib/payments'
+import { buildPaymentLink, PAYMENT_PROVIDERS, ZELLE_WEBSITE_URL } from '../../lib/payments'
 import { useAuth } from '../../lib/supabase/useAuth'
 import { fetchPaymentHandles, type PaymentHandle } from '../../lib/supabase/paymentHandles'
 import { StepShell } from '../StepShell'
@@ -18,6 +18,7 @@ export function ShareStep() {
   const people = useReceiptStore((s) => s.people)
   const items = useReceiptStore((s) => s.items)
   const taxCents = useReceiptStore((s) => s.taxCents)
+  const feeCents = useReceiptStore((s) => s.feeCents)
   const tipMode = useReceiptStore((s) => s.tipMode)
   const tipValue = useReceiptStore((s) => s.tipValue)
   const tipBasis = useReceiptStore((s) => s.tipBasis)
@@ -51,8 +52,8 @@ export function ShareStep() {
   const result = useMemo(() => {
     const subtotalCents = items.reduce((sum, i) => sum + i.totalPriceCents, 0)
     const tipCents = computeTipCents(tipMode, tipValue, tipBasis, subtotalCents, taxCents)
-    return computeSplit({ people, items, taxCents, tipCents, splitBasis, enteredGrandTotalCents })
-  }, [people, items, taxCents, tipMode, tipValue, tipBasis, splitBasis, enteredGrandTotalCents])
+    return computeSplit({ people, items, taxCents, tipCents, feeCents, splitBasis, enteredGrandTotalCents })
+  }, [people, items, taxCents, feeCents, tipMode, tipValue, tipBasis, splitBasis, enteredGrandTotalCents])
 
   const payer = people.find((p) => p.id === payerId) ?? null
   const owingPeople =
@@ -63,7 +64,9 @@ export function ShareStep() {
       const saved = paymentHandles.find((h) => h.provider === p.id)
       if (!saved) return null
       const link = buildPaymentLink(p.id, saved.handle)
-      return `${p.label}: ${link ?? saved.handle}`
+      if (link) return `${p.label}: ${link}`
+      if (p.id === 'zelle') return `Zelle: ${saved.handle} (open Zelle: ${ZELLE_WEBSITE_URL})`
+      return `${p.label}: ${saved.handle}`
     }).filter((line): line is string => line !== null)
     return lines.join('\n')
   }
@@ -191,13 +194,23 @@ export function ShareStep() {
                       Open link
                     </a>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleCopyZelle(saved.handle)}
-                      className="shrink-0 truncate text-[13px] font-semibold text-primary"
-                    >
-                      {saved.handle}
-                    </button>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyZelle(saved.handle)}
+                        className="truncate text-[13px] font-semibold text-primary"
+                      >
+                        {saved.handle}
+                      </button>
+                      <a
+                        href={ZELLE_WEBSITE_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[13px] font-semibold text-primary"
+                      >
+                        Open Zelle
+                      </a>
+                    </div>
                   )}
                 </div>
               )

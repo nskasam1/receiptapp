@@ -59,6 +59,7 @@ export interface ComputeSplitArgs {
   items: Item[]
   taxCents: number
   tipCents: number
+  feeCents: number
   splitBasis: SplitBasis
   enteredGrandTotalCents: number | null
 }
@@ -68,6 +69,7 @@ export function computeSplit({
   items,
   taxCents,
   tipCents,
+  feeCents,
   splitBasis,
   enteredGrandTotalCents,
 }: ComputeSplitArgs): SplitResult {
@@ -107,11 +109,13 @@ export function computeSplit({
 
   const taxShares = allocateCents(taxCents, weightsForTaxTip, tieBreakOrder)
   const tipShares = allocateCents(tipCents, weightsForTaxTip, tieBreakOrder)
+  const feeShares = allocateCents(feeCents, weightsForTaxTip, tieBreakOrder)
 
   const personSplits: PersonSplit[] = people.map((p) => {
     const subtotalShareCents = subtotalShares[p.id] ?? 0
     const taxShareCents = taxShares[p.id] ?? 0
     const tipShareCents = tipShares[p.id] ?? 0
+    const feeShareCents = feeShares[p.id] ?? 0
     return {
       personId: p.id,
       name: p.name,
@@ -119,11 +123,12 @@ export function computeSplit({
       subtotalShareCents,
       taxShareCents,
       tipShareCents,
-      totalCents: subtotalShareCents + taxShareCents + tipShareCents,
+      feeShareCents,
+      totalCents: subtotalShareCents + taxShareCents + tipShareCents + feeShareCents,
     }
   })
 
-  const computedGrandTotalCents = subtotalCents + taxCents + tipCents
+  const computedGrandTotalCents = subtotalCents + taxCents + tipCents + feeCents
   const differenceCents = (enteredGrandTotalCents ?? computedGrandTotalCents) - computedGrandTotalCents
 
   return {
@@ -131,6 +136,7 @@ export function computeSplit({
     subtotalCents,
     taxCents,
     tipCents,
+    feeCents,
     computedGrandTotalCents,
     enteredGrandTotalCents,
     reconciles: enteredGrandTotalCents === null || Math.abs(differenceCents) < 1,

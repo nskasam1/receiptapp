@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useReceiptStore } from '../../store/useReceiptStore'
 import { isSupabaseConfigured } from '../../lib/supabase/client'
 import { useAuth } from '../../lib/supabase/useAuth'
 import { StepShell } from '../StepShell'
 import { BottomBar } from '../BottomBar'
-import { AuthForm } from '../ui/AuthForm'
+import { SignInPage } from '../SignInPage'
 import { PaymentSetupPage } from '../PaymentSetupPage'
 import { Icon, type IconName } from '../ui/Icon'
 
@@ -15,20 +15,28 @@ const FEATURES: { icon: IconName; text: string }[] = [
 ]
 
 export function LoginStep() {
-  const nextStep = useReceiptStore((s) => s.nextStep)
+  const reset = useReceiptStore((s) => s.reset)
   const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
   const [showAuthForm, setShowAuthForm] = useState(false)
   const [showPaymentSetup, setShowPaymentSetup] = useState(false)
 
+  useEffect(() => {
+    if (user) setShowAuthForm(false)
+  }, [user])
+
   if (showPaymentSetup && user) {
     return <PaymentSetupPage user={user} onBack={() => setShowPaymentSetup(false)} />
+  }
+
+  if (showAuthForm) {
+    return <SignInPage onSignIn={signIn} onSignUp={signUp} onBack={() => setShowAuthForm(false)} />
   }
 
   return (
     <StepShell
       title="SplitScan"
       bottomBar={
-        <BottomBar primaryLabel={user ? 'Continue' : 'Continue as guest'} onPrimary={nextStep} variant="accent" />
+        <BottomBar primaryLabel={user ? 'Continue' : 'Continue as guest'} onPrimary={reset} variant="accent" />
       }
     >
       <div className="flex flex-col items-center py-6 text-center">
@@ -71,17 +79,6 @@ export function LoginStep() {
               <Icon name="wallet" size={18} className="shrink-0 text-primary" />
               <span className="flex-1 text-[14px] font-medium text-ink">Payment methods</span>
               <Icon name="chevron-right" size={17} className="shrink-0 text-muted" />
-            </button>
-          </div>
-        ) : showAuthForm ? (
-          <div className="animate-rise flex w-full max-w-xs flex-col gap-2">
-            <AuthForm onSignIn={signIn} onSignUp={signUp} />
-            <button
-              type="button"
-              onClick={() => setShowAuthForm(false)}
-              className="text-[13px] font-medium text-muted"
-            >
-              Never mind
             </button>
           </div>
         ) : (
