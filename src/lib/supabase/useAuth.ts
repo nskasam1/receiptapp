@@ -51,5 +51,15 @@ export function useAuth() {
     await supabase?.auth.signOut()
   }
 
-  return { user, loading, signUp, signIn, signOut }
+  async function updateDisplayName(name: string): Promise<AuthResult> {
+    if (!supabase) return { ok: false, message: 'Sync is not configured yet' }
+    const trimmed = name.trim()
+    if (!trimmed) return { ok: false, message: 'Enter a name first' }
+    const { data, error } = await supabase.auth.updateUser({ data: { display_name: trimmed } })
+    if (error) return { ok: false, message: error.message }
+    if (data.user) setUser(data.user)
+    return { ok: true }
+  }
+
+  return { user, loading, signUp, signIn, signOut, updateDisplayName }
 }

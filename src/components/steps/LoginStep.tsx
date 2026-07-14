@@ -7,6 +7,7 @@ import { BottomBar } from '../BottomBar'
 import { SignInPage } from '../SignInPage'
 import { PaymentSetupPage } from '../PaymentSetupPage'
 import { Icon, type IconName } from '../ui/Icon'
+import { Toast } from '../ui/Toast'
 
 const FEATURES: { icon: IconName; text: string }[] = [
   { icon: 'receipt', text: 'Scan a receipt — Claude reads every item off it' },
@@ -16,13 +17,29 @@ const FEATURES: { icon: IconName; text: string }[] = [
 
 export function LoginStep() {
   const reset = useReceiptStore((s) => s.reset)
-  const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
+  const { user, loading: authLoading, signIn, signUp, signOut, updateDisplayName } = useAuth()
   const [showAuthForm, setShowAuthForm] = useState(false)
   const [showPaymentSetup, setShowPaymentSetup] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) setShowAuthForm(false)
   }, [user])
+
+  useEffect(() => {
+    setNameDraft(typeof user?.user_metadata?.display_name === 'string' ? user.user_metadata.display_name : '')
+  }, [user])
+
+  async function handleSaveName() {
+    const trimmed = nameDraft.trim()
+    if (!trimmed) return
+    setSavingName(true)
+    const result = await updateDisplayName(trimmed)
+    setSavingName(false)
+    setToast(result.ok ? 'Name saved' : (result.message ?? 'Could not save name'))
+  }
 
   if (showPaymentSetup && user) {
     return <PaymentSetupPage user={user} onBack={() => setShowPaymentSetup(false)} />
@@ -71,6 +88,27 @@ export function LoginStep() {
                 Sign out
               </button>
             </div>
+
+            <div className="flex items-center gap-2 rounded-xl border border-border px-4 py-3">
+              <input
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                placeholder="Your name (shown to others in a split)"
+                className="min-w-0 flex-1 bg-transparent text-[14px] text-ink placeholder:text-muted"
+              />
+              {nameDraft.trim() &&
+                nameDraft.trim() !== (typeof user.user_metadata?.display_name === 'string' ? user.user_metadata.display_name : '') && (
+                  <button
+                    type="button"
+                    onClick={handleSaveName}
+                    disabled={savingName}
+                    className="shrink-0 text-[13px] font-medium text-primary disabled:opacity-50"
+                  >
+                    Save
+                  </button>
+                )}
+            </div>
+
             <button
               type="button"
               onClick={() => setShowPaymentSetup(true)}
@@ -91,6 +129,8 @@ export function LoginStep() {
           </button>
         )}
       </div>
+
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
     </StepShell>
   )
 }

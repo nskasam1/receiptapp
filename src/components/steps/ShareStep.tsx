@@ -29,7 +29,7 @@ export function ShareStep() {
   const prevStep = useReceiptStore((s) => s.prevStep)
   const reset = useReceiptStore((s) => s.reset)
 
-  const [format, setFormat] = useState<'itemized' | 'short'>('itemized')
+  const [format, setFormat] = useState<'itemized' | 'short'>('short')
   const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
@@ -59,6 +59,23 @@ export function ShareStep() {
   const owingPeople =
     payerId && people.length > 1 ? result.people.filter((split) => split.personId !== payerId) : result.people
 
+  // The saved Venmo/Zelle/etc. handles belong to this account — only relevant
+  // to share when this account is the one who actually paid (or nobody's been
+  // denoted yet). If someone else paid, sharing "my" payment info would be
+  // misleading, so it's left out entirely.
+  const payerIsMe = !payer || payer.name === 'ME'
+  const displayName =
+    typeof user?.user_metadata?.display_name === 'string' ? user.user_metadata.display_name.trim() : ''
+
+  // "ME" only makes sense as a label inside this device's own UI. Once someone
+  // else is denoted as the payer, any row still showing "ME" is being read by
+  // other people, so it needs to become an actual name.
+  function resolveDisplayName(rawName: string): string {
+    if (rawName !== 'ME' || payerIsMe) return rawName
+    return displayName || 'Me'
+  }
+  const displayOwingPeople = owingPeople.map((split) => ({ ...split, name: resolveDisplayName(split.name) }))
+
   function buildPaymentLinesText(): string {
     const lines = PAYMENT_PROVIDERS.map((p) => {
       const saved = paymentHandles.find((h) => h.provider === p.id)
@@ -72,6 +89,7 @@ export function ShareStep() {
   }
 
   function withPaymentLinks(text: string): string {
+    if (!payerIsMe) return text
     const paymentLines = buildPaymentLinesText()
     return paymentLines ? `${text}\n\nPay me via:\n${paymentLines}` : text
   }
@@ -100,7 +118,9 @@ export function ShareStep() {
       bottomBar={
         <BottomBar
           primaryLabel="Share the breakdown"
-          onPrimary={() => handleShare(withPaymentLinks(buildGroupSummaryText(owingPeople, format === 'itemized')))}
+          onPrimary={() =>
+            handleShare(withPaymentLinks(buildGroupSummaryText(displayOwingPeople, format === 'itemized')))
+          }
           variant="accent"
           secondary={
             <button type="button" onClick={reset} className="px-2 text-[13px] font-medium text-primary">
@@ -137,14 +157,14 @@ export function ShareStep() {
           value={format}
           onChange={setFormat}
           options={[
-            { value: 'itemized', label: 'Itemized' },
             { value: 'short', label: 'Short' },
+            { value: 'itemized', label: 'Itemized' },
           ]}
         />
       </div>
 
       <ul className="flex flex-col gap-2.5">
-        {owingPeople.map((split) => {
+        {displayOwingPeople.map((split) => {
           const text = format === 'itemized' ? buildItemizedText(split) : buildShortText(split)
           return (
             <li
@@ -169,7 +189,7 @@ export function ShareStep() {
         })}
       </ul>
 
-      {paymentHandles.length > 0 && (
+      {payerIsMe && paymentHandles.length > 0 && (
         <div className="mt-6">
           <div className="mb-2 text-[13px] font-medium text-muted">Pay me via</div>
           <div className="flex flex-col gap-2">

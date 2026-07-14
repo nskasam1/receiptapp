@@ -66,7 +66,7 @@ const initialState = {
   tipMode: 'percent' as TipMode,
   tipValue: 18,
   tipBasis: 'subtotal' as TipBasis,
-  splitBasis: 'proportional' as SplitBasis,
+  splitBasis: 'even' as SplitBasis,
   enteredGrandTotalCents: null as number | null,
   payerId: null as PersonId | null,
   feeCents: 0,

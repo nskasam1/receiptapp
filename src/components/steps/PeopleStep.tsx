@@ -45,6 +45,12 @@ export function PeopleStep() {
     fetchPeopleGroups(user.id).then(setGroups)
   }, [user])
 
+  useEffect(() => {
+    if (people.length === 0) addPerson('ME')
+    // Only ever auto-add on a genuinely fresh, empty split — not every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   async function submitName() {
     const trimmed = name.trim()
     if (!trimmed) return
@@ -152,7 +158,7 @@ export function PeopleStep() {
         />
       }
     >
-      {user && !hasMe && (
+      {!hasMe && (
         <button
           type="button"
           onClick={() => addPerson('ME')}
